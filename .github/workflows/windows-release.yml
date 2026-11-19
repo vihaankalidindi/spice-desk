@@ -1,0 +1,80 @@
+name: Publish Windows installer
+
+on:
+  push:
+    tags: [v1.0.0]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Build and verify Windows installer
+        shell: pwsh
+        run: |
+          npm ci
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          npm run package:windows
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          New-Item -ItemType Directory -Path delivery | Out-Null
+          Copy-Item release/Splice-Desk-Setup-1.0.0-x64.exe delivery/
+          git archive --format=zip --prefix=Splice-Desk/ --output=delivery/Splice-Desk-Source.zip $env:GITHUB_SHA
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $resources = 'release/win-unpacked/resources'
+          if (!(Test-Path "$resources/ffmpeg/ffmpeg.exe") -or
+              !(Test-Path "$resources/voice/node_modules/sherpa-onnx-win-x64/sherpa-onnx.node")) {
+            throw 'The build is missing the video encoder or local voice runtime.'
+          }
+          7z t delivery/Splice-Desk-Setup-1.0.0-x64.exe
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: splice-desk-windows-v1.0.0
+          path: delivery/
+          if-no-files-found: error
+          compression-level: 0
+
+  publish:
+    needs: build
+    if: github.ref == 'refs/tags/v1.0.0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: splice-desk-windows-v1.0.0
+          path: delivery
+      - name: Attach installer and publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          installer=delivery/Splice-Desk-Setup-1.0.0-x64.exe
+          source=delivery/Splice-Desk-Source.zip
+          test -s "$installer"
+          test -s "$source"
+          draft=$(gh release view "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)
+          test "$draft" = true
+          SHA256=$(sha256sum "$installer" | cut -d' ' -f1)
+          cat > "$RUNNER_TEMP/splice-desk-release.md" <<NOTES
+          Splice Desk 1.0.0 is a prompt-driven desktop editor for Windows 11 x64. It creates short- and long-form commentary videos with synchronized AI narration and captions, an approval preview, and local 1080p MP4 export.
+
+          Download and run **Splice-Desk-Setup-1.0.0-x64.exe**. Choose **Try sample** to preview an example offline, or add a Gemini API key in **Settings** to generate a new draft.
+
+          Installer SHA-256: $SHA256
+          NOTES
+          gh release upload "$GITHUB_REF_NAME" "$installer" "$source" --repo "$GITHUB_REPOSITORY"
+          gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --notes-file "$RUNNER_TEMP/splice-desk-release.md"
