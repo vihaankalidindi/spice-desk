@@ -1,0 +1,65 @@
+{
+  "name": "splice-desk",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A prompt-driven desktop studio for commentary videos.",
+  "main": "main.cjs",
+  "author": "Splice Desk",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "start": "electron .",
+    "stage:ffmpeg": "node tools/stage-ffmpeg.cjs",
+    "stage:windows": "npm run stage:ffmpeg && node tools/stage-voice.cjs win",
+    "package:windows": "npm run stage:windows && electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "45.4.1",
+    "electron-builder": "26.18.0",
+    "extract-zip": "2.0.1"
+  },
+  "build": {
+    "appId": "studio.splicedesk.desktop",
+    "productName": "Splice Desk",
+    "publish": null,
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "*.cjs",
+      "*.html",
+      "*.css",
+      "*.js",
+      "*.mjs",
+      "assets/**/*",
+      "ui/**/*",
+      "renderer/**/*",
+      "build/icon.ico"
+    ],
+    "asar": true,
+    "npmRebuild": false,
+    "afterPack": "tools/copy-voice-runtime.cjs",
+    "win": {
+      "icon": "build/icon.ico",
+      "target": "nsis",
+      "signExecutable": false,
+      "extraResources": [
+        {"from": "stage/win/ffmpeg", "to": "ffmpeg"},
+        {"from": "stage/win/voice", "to": "voice"}
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "differentialPackage": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Splice Desk",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "artifactName": "Splice-Desk-Setup-${version}-${arch}.${ext}"
+    }
+  }
+}

@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' https://upload.wikimedia.org https://thumb.wikimedia.org studio-media:; media-src studio-media:; connect-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Splice Desk</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <svg class="icon-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-brand" viewBox="0 0 24 24"><path fill="currentColor" d="M4.2 6.1h8.2l-3.7 5.1H.5zm4.5 6.7h8.2l-3.7 5.1H5zm6.4-6.7h8.2l-3.7 5.1h-8.2z"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 2.8 14 9l6.2 2-6.2 2-2 6.2L10 13l-6.2-2L10 9zM19 3v4m-2-2h4"/></symbol>
+    <symbol id="i-script" viewBox="0 0 24 24"><path d="M6 3.5h8.5L18 7v13.5H6zM14 3.5v4h4M9 11h6m-6 3h6m-6 3h4"/></symbol>
+    <symbol id="i-film" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2"/><path d="M8 5v14m8-14v14M3.5 10H8m-4.5 4H8m8-4h4.5M16 14h4.5"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m9 5.5 10 6.5-10 6.5z"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3.5 18.5V6h6l2 2h9v10.5z"/></symbol>
+    <symbol id="i-save" viewBox="0 0 24 24"><path d="M4.5 4.5h13l2 2v13h-15zM8 4.5V10h8V4.5M8 19.5v-5h8v5"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.1"/><path d="m10 3.5-1 2.7-2.5.9-2.4-.4-2 3.5 1.8 2.1.4 2.5-1 2.3 2.7 2.7 2.6-1 2.6.6 1.7 1.8 3.5-2 .1-2.7 1.7-2 2.4-.8v-3.9l-2.5-.9-1.5-2.1-.1-2.3-3.8-1.3z"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4.5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4 10-9"/></symbol>
+    <symbol id="i-portrait" viewBox="0 0 24 24"><rect x="7" y="3.5" width="10" height="17" rx="2"/></symbol>
+    <symbol id="i-landscape" viewBox="0 0 24 24"><rect x="3.5" y="7" width="17" height="10" rx="2"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-sound" viewBox="0 0 24 24"><path d="M4 9h4l4-4v14l-4-4H4zM16 9a4 4 0 0 1 0 6m2.5-8.5a7.8 7.8 0 0 1 0 11"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M13 5h6v6m0-6-8 8m7 0v6H5V6h6"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M5 17v4h14v-4"/></symbol>
+  </svg>
+  <div class="shell">
+    <aside class="rail" aria-label="Workspace">
+      <div class="brand">
+        <span class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#i-brand"></use></svg></span>
+        <span>Splice<span class="brand-last"> Desk</span></span>
+      </div>
+      <button class="rail-new" id="new-project" type="button"><svg class="icon" aria-hidden="true"><use href="#i-plus"></use></svg> New project</button>
+
+      <div class="rail-group">
+        <p class="rail-label">Workflow</p>
+        <nav class="steps" aria-label="Editing steps">
+          <button type="button" class="step" id="step-prompt" aria-current="step"><svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg><span>Prompt</span></button>
+          <button type="button" class="step" id="step-draft" disabled><svg class="icon" aria-hidden="true"><use href="#i-script"></use></svg><span>Edit draft</span></button>
+          <button type="button" class="step" id="step-preview" disabled><svg class="icon" aria-hidden="true"><use href="#i-film"></use></svg><span>Preview &amp; export</span></button>
+        </nav>
+      </div>
+
+      <div class="rail-end">
+        <button type="button" class="step settings-button" id="settings"><svg class="icon" aria-hidden="true"><use href="#i-settings"></use></svg><span>Settings</span></button>
+        <div class="connection" id="connection"><span class="connection-dot"></span><span id="connection-text">Checking Gemini setup</span></div>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <header class="topbar">
+        <div class="crumb"><span>Projects</span><span aria-hidden="true">/</span><strong id="crumb-title">Untitled project</strong></div>
+        <div class="top-actions">
+          <button class="button button-quiet" id="open-project" type="button"><svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg> Open</button>
+          <button class="button button-soft" id="save-project" type="button" disabled><svg class="icon" aria-hidden="true"><use href="#i-save"></use></svg> Save project</button>
+        </div>
+      </header>
+
+      <div class="workspace-inner">
+        <header class="page-header">
+          <h1 id="page-title">New commentary video</h1>
+          <p id="page-description">Describe your video. Splice Desk finds sources and footage, then assembles the first cut.</p>
+        </header>
+
+        <div id="notice" class="notice" role="status" aria-live="polite" hidden>
+          <p id="notice-text"></p>
+          <button type="button" class="icon-button" id="notice-dismiss" aria-label="Dismiss message"><svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg></button>
+        </div>
+
+        <div id="job-card" class="job-card" role="status" aria-live="polite" hidden>
+          <div class="job-row"><span id="job-message"></span><button type="button" class="button button-soft" id="cancel-job">Cancel</button></div>
+          <progress id="job-progress" max="100" value="0" aria-label="Current task progress"></progress>
+        </div>
+
+        <div class="editor-grid">
+          <div class="edit-column">
+            <section class="panel" id="prompt-panel" aria-labelledby="prompt-heading">
+              <form id="prompt-form">
+                <div class="panel-heading"><svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg><h2 id="prompt-heading">Video prompt</h2></div>
+                <label class="visually-hidden" for="prompt">Describe the video</label>
+                <textarea id="prompt" rows="5" maxlength="4000" placeholder="What should your video be about?" required></textarea>
+                <button class="example" id="fill-example" type="button"><svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg><span>Try an example prompt</span></button>
+
+                <fieldset class="field format-field">
+                  <legend>Format</legend>
+                  <div class="format-options">
+                    <label class="format-option"><input type="radio" name="format" value="short" checked><span class="format-content"><svg class="icon" aria-hidden="true"><use href="#i-portrait"></use></svg><span><strong>Short-form</strong><small>15 sec – 3 min</small></span></span></label>
+                    <label class="format-option"><input type="radio" name="format" value="long"><span class="format-content"><svg class="icon" aria-hidden="true"><use href="#i-landscape"></use></svg><span><strong>Long-form</strong><small>3 – 30 min</small></span></span></label>
+                  </div>
+                </fieldset>
+
+                <div class="field-columns">
+                  <div class="field">
+                    <label for="duration">Target duration</label>
+                    <div class="input-unit"><input type="number" id="duration" min="15" max="180" step="1" required value="60"><span id="duration-unit">seconds</span></div>
+                  </div>
+                  <div class="field">
+                    <label for="aspect">Layout</label>
+                    <select id="aspect"><option value="portrait">Vertical · 9:16</option><option value="landscape">Landscape · 16:9</option></select>
+                  </div>
+                </div>
+
+                <button type="submit" class="button button-primary primary-action" id="generate"><svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg> Generate video draft <svg class="icon end-icon" aria-hidden="true"><use href="#i-arrow"></use></svg></button>
+              </form>
+            </section>
+
+            <section class="panel draft-panel" id="draft-panel" aria-labelledby="draft-heading" hidden>
+              <div class="panel-heading"><svg class="icon" aria-hidden="true"><use href="#i-script"></use></svg><h2 id="draft-heading">Edit draft</h2></div>
+              <div class="draft-tabs" aria-label="Draft sections">
+                <button type="button" class="text-tab" id="tab-script" aria-pressed="true">Script</button>
+                <button type="button" class="text-tab" id="tab-sources" aria-pressed="false">Sources</button>
+                <button type="button" class="text-tab" id="tab-footage" aria-pressed="false">Footage</button>
+              </div>
+              <div id="draft-content"></div>
+              <details class="revision">
+                <summary>Revise with a prompt</summary>
+                <form id="revision-form">
+                  <label for="feedback" class="visually-hidden">Describe how to revise the draft</label>
+                  <textarea id="feedback" rows="3" maxlength="2500" placeholder="Shorten the intro and use a calmer background."></textarea>
+                  <button class="button button-soft" type="submit" id="revise"><svg class="icon" aria-hidden="true"><use href="#i-spark"></use></svg> Regenerate draft</button>
+                </form>
+              </details>
+            </section>
+
+            <section class="panel review-panel" id="review-panel" aria-labelledby="review-heading" hidden>
+              <div class="panel-heading"><svg class="icon" aria-hidden="true"><use href="#i-film"></use></svg><h2 id="review-heading">Review your cut</h2></div>
+              <p id="review-status"></p>
+              <dl class="review-specs">
+                <div><dt>Format</dt><dd id="spec-aspect">Vertical · 9:16</dd></div>
+                <div><dt>Duration</dt><dd id="spec-duration">—</dd></div>
+                <div><dt>File</dt><dd>MP4 · 1080p · 30 fps</dd></div>
+                <div><dt>Audio</dt><dd>AI voice with synced captions</dd></div>
+              </dl>
+              <button type="button" class="button button-primary primary-action" id="approve-export" disabled><svg class="icon" aria-hidden="true"><use href="#i-download"></use></svg> Approve and export</button>
+              <div id="export-complete" class="export-complete" hidden>
+                <p id="export-result"></p>
+                <button type="button" class="button button-soft" id="show-export"><svg class="icon" aria-hidden="true"><use href="#i-folder"></use></svg> Show in folder</button>
+              </div>
+            </section>
+          </div>
+
+          <section class="panel preview-panel" aria-labelledby="preview-heading">
+            <div class="preview-heading">
+              <div class="panel-heading"><svg class="icon" aria-hidden="true"><use href="#i-film"></use></svg><h2 id="preview-heading">Video preview</h2></div>
+              <span id="preview-badge" class="status-badge">Sample</span>
+            </div>
+
+            <div class="viewer" id="viewer">
+              <div id="sample-poster" class="sample-poster">
+                <img src="assets/orbit.webp" alt="">
+                <span class="poster-tint"></span>
+                <div class="sample-title"><p>Why does Earth<br>glow blue?</p></div>
+                <p class="sample-caption">Our atmosphere scatters blue light.</p>
+              </div>
+              <div id="empty-preview" class="empty-preview" hidden>
+                <svg class="icon" aria-hidden="true"><use href="#i-film"></use></svg>
+                <p id="empty-preview-text">Your video preview will appear here.</p>
+              </div>
+              <video id="preview-video" controls playsinline preload="metadata" aria-label="Assembled video preview" hidden></video>
+            </div>
+
+            <div class="preview-actions">
+              <div id="sample-info" class="preview-info"><svg class="icon" aria-hidden="true"><use href="#i-sound"></use></svg> AI voice and captions</div>
+              <div id="preview-info" class="preview-info" hidden><svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg><span id="preview-duration">—</span></div>
+              <button type="button" class="button button-soft" id="load-demo"><svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg> Try sample</button>
+              <button type="button" class="button button-soft" id="build-preview" hidden><svg class="icon" aria-hidden="true"><use href="#i-play"></use></svg> Build preview</button>
+              <button type="button" class="button button-soft" id="open-review" hidden>Review &amp; export <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg></button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <div class="dialog-heading"><h2 id="settings-title">Settings</h2><button class="icon-button" type="button" id="close-settings" aria-label="Close settings"><svg class="icon" aria-hidden="true"><use href="#i-x"></use></svg></button></div>
+    <form id="settings-form">
+      <div class="field">
+        <label for="api-key">Gemini API key</label>
+        <input type="password" id="api-key" autocomplete="off" spellcheck="false" maxlength="300">
+        <p class="field-hint">Use a free-tier key from <button type="button" class="link-button" id="get-key">Google AI Studio <svg class="icon" aria-hidden="true"><use href="#i-external"></use></svg></button>.</p>
+      </div>
+      <div class="field">
+        <label for="model">Gemini model</label>
+        <input type="text" id="model" spellcheck="false" maxlength="100" required>
+      </div>
+      <p class="field-hint" id="voice-status"></p>
+      <p class="dialog-error" id="settings-error" role="alert" hidden></p>
+      <div class="dialog-actions">
+        <button class="button button-soft" type="button" id="remove-key" hidden>Remove key</button>
+        <button class="button button-primary" id="save-settings" type="submit">Save settings</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="reset-dialog" aria-labelledby="reset-title">
+    <div class="dialog-heading"><h2 id="reset-title">Start a new project?</h2></div>
+    <p>Save your current draft first if you want to reopen it later.</p>
+    <div class="dialog-actions">
+      <button class="button button-soft" type="button" id="keep-project">Keep editing</button>
+      <button class="button button-primary" type="button" id="discard-project">Start new project</button>
+    </div>
+  </dialog>
+</body>
+</html>

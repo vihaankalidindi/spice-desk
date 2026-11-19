@@ -1,0 +1,8 @@
+node_modules/
+.cache/
+stage/
+release/
+output/
+.env
+.env.*
+npm-debug.log*
